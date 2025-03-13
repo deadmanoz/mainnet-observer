@@ -12,6 +12,7 @@ use std::io::Write;
 use std::process::exit;
 use std::sync::mpsc;
 use std::{error, fmt, io, thread};
+use num_cpus;
 
 const METRIC_TABLES: [&str; 5] = [
     "block_stats",
@@ -130,6 +131,10 @@ struct Args {
     /// Flag to disable stat generation
     #[arg(long, default_value_t = false)]
     no_stats: bool,
+
+    /// Number of threads to use for parallel processing (default: number of logical cores)
+    #[arg(long)]
+    threads: Option<usize>,
 }
 
 fn main() {
@@ -178,6 +183,31 @@ fn collect_statistics(args: &Args) -> Result<(), MainError> {
 
     let (block_sender, block_receiver) = mpsc::sync_channel(10);
     let (stat_sender, stat_receiver) = mpsc::sync_channel(100);
+
+    // Determine the number of threads to use
+    let available_cores = num_cpus::get();
+    let thread_count = match args.threads {
+        Some(requested_threads) => {
+            let limited_threads = std::cmp::min(requested_threads, available_cores);
+            if limited_threads < requested_threads {
+                info!(
+                    "Requested {} threads, but limiting to {} available CPU cores",
+                    requested_threads, limited_threads
+                );
+            }
+            limited_threads
+        },
+        None => available_cores,
+    };
+
+    info!("Using {} threads for parallel processing", thread_count);
+
+    // Configure Rayon's global thread pool
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(thread_count)
+        .build_global()
+        .unwrap();
+
 
     // get-blocks task
     // gets blocks from the Bitcoin Core REST interface and sends them onwards
