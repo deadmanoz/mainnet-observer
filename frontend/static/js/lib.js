@@ -22,8 +22,9 @@ const annotationBlockchainComSegwit = {'text': 'Blockchain.com wallet supports S
 const annotationTaprootLockedIn = {'text': 'Taproot soft-fork locked-in', 'date': '2021-06-12'}
 const annotationTaprootActivated = {'text': 'Taproot soft-fork activated', 'date': '2021-11-14'}
 const annotationBitcoinCore23 = {'text': 'Bitcoin Core v23 released', 'date': '2022-04-25'}
+const annotationBitcoinCore28 = {'text': 'Bitcoin Core v28 released (P2A support)', 'date': '2024-10-02'}
 const annotationChinaMiningBan = {'text': 'China mining ban', 'date': '2021-05-21'}
-const annotationASICsAvaliable = {'text': 'First ASIC miners avaliable', 'date': '2013-08-01'} 
+const annotationASICsAvaliable = {'text': 'First ASIC miners avaliable', 'date': '2013-08-01'}
 const annotationGPUMinerAvaliable = {'text': 'First GPU miners avaliable', 'date': '2010-07-01'}
 const annotationP2SHActivation = {'text': 'P2SH Activation', 'date': '2012-04-01'}
 const annotationInscriptionsHype = {'text': 'Inscriptions hype', 'date': '2023-04-15'}
@@ -136,6 +137,15 @@ function formatWithSIPrefix(value, unit="", long = false) {
 
 function formatPercentage(v) {
   return v + "%";
+}
+
+function formatCount(value) {
+  const abs = Math.abs(value);
+  if (abs >= 1e12) return (value / 1e12).toFixed(1).replace(/\.0$/, '') + 'T';
+  if (abs >= 1e9) return (value / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+  if (abs >= 1e6) return (value / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (abs >= 1e3) return (value / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  return value.toString();
 }
 
 function saveThumbnail() {
